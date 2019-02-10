@@ -10,10 +10,10 @@ if available.
 ## Role Variables
 
 * `host_address`  
-  IP of host. Value of variable should be `json.primary_address` for json data like <https://git.arnes.si/anso/harfa/snippets/47>
+  IP of host. 
 
 * `fqdn`   
-  A fully qualified domain name of host. Value of variable should be `json.name` for json data like <https://git.arnes.si/anso/harfa/snippets/47>
+  A fully qualified domain name of host. 
 
 * `host_groups`  
   Host can be assign to specific groups. Variable shoud be type list(vlak element pa je hash s ključema name in slug). 
