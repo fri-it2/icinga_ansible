@@ -1,0 +1,6 @@
+icinga2_hosts_dir: "/etc/icinga2/conf.d/hosts"
+host_groups: []
+fqdn: "{{ inventory_hostname }}"
+host_address: "{{ ansible_host }}"
+host_state: "present"
+delegate: "{{ ansible_host }}"
