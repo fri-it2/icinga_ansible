@@ -1,0 +1,60 @@
+- name: Define groups
+  blockinfile:
+    path: /etc/icinga2/conf.d/groups.conf
+    block: |
+      object HostGroup "{{ item.slug }}" {
+        display_name = "{{ item.name | regex_replace('"','\\"')}}"
+        assign where "{{ item.slug }}" in host.vars.host_groups
+
+        }
+    state: present
+    marker: /*-- {mark} {{ item.slug }} --*/
+  when: host_state == "present"
+  with_items: "{{ host_groups }}"
+  register: groups_result
+  delegate_to: "{{ delegate }}"
+
+- name: reload icinga2 to process groups
+  service:
+    name: icinga2
+    state: reloaded
+    enabled: yes
+  when: groups_result.changed
+  delegate_to: "{{ delegate }}"
+
+- name: Initialize variables
+  set_fact:
+    my_group: "{{ host_groups | map(attribute='slug') | list | map('regex_replace', '^(.*)$', '\"\\1\"') | list }}"
+  when: host_groups
+  delegate_to: "{{ delegate }}"
+
+- name: Creates directory hosts
+  file:
+    path: "{{ icinga2_hosts_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  when: host_state == "present"
+  delegate_to: "{{ delegate }}"
+
+- name: Copy Host Definitions if state is present
+  template:
+    src: hosts_template.j2
+    dest: "{{ icinga2_hosts_dir }}/{{ fqdn }}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload icinga2
+  when: host_state == "present"
+  delegate_to: "{{ delegate }}"
+
+- name: Remove Host Definitions if state is absent
+  file:
+    state: absent
+    path: "{{ icinga2_hosts_dir }}/{{ fqdn }}.conf"
+  when: host_state == "absent"
+  notify:
+   - reload icinga2
+  delegate_to: "{{ delegate }}"
