@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# A host definition
+object Host "{{ fqdn }}" {
+  address = "{{ host_address }}"
+  check_command = "hostalive"
+{% if my_group is defined and my_group %}
+  vars.host_groups = [{{ my_group|join(' ,')  }}]
+{% endif -%}
+}
